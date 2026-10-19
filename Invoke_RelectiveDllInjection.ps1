@@ -999,7 +999,12 @@ $RemoteScriptBlock = {
         $UnsafeNativeMethods = $SystemAssembly.GetType('Microsoft.Win32.UnsafeNativeMethods')
         # Get a reference to the GetModuleHandle and GetProcAddress methods
         $GetModuleHandle = $UnsafeNativeMethods.GetMethod('GetModuleHandle')
-        $GetProcAddress = $UnsafeNativeMethods.GetMethod('GetProcAddress')
+        $GetProcAddress = $UnsafeNativeMethods.GetMethods() | Where-Object { 
+            $_.Name -eq 'GetProcAddress' -and 
+            $_.GetParameters().Count -eq 2 -and
+            $_.GetParameters()[0].ParameterType -eq [IntPtr] -and
+            $_.GetParameters()[1].ParameterType -eq [string]
+        } | Select-Object -First 1
         # Get a handle to the module specified
         $Kern32Handle = $GetModuleHandle.Invoke($null, @($Module))
         $tmpPtr = New-Object IntPtr
